@@ -83,7 +83,7 @@ namespace Catchem
 
         internal void InitBots()
         {
-            Logger.SetLogger(new WpfLogger(LogLevel.Info), SubPath);
+            Logger.SetLogger(new WpfLogger(LogLevel.Debug), SubPath);
             botsBox.ItemsSource = BotsCollection;
             grid_pickBot.Visibility = Visibility.Visible;
             foreach (var item in Directory.GetDirectories(SubPath))
@@ -143,7 +143,22 @@ namespace Catchem
                 if ((ulong)objData[0] == 0) return;
                 var receiverBot = BotsCollection.FirstOrDefault(x => x.Session == session);
                 if (receiverBot == null) return;
-                receiverBot.PokemonUpdated((ulong)objData[0], (int)objData[2], (double)objData[3], (PokemonFamilyId)objData[4], (int)objData[5]);
+                receiverBot.PokemonUpdated((ulong)objData[0], (int)objData[2], (double)objData[3], (PokemonFamilyId)objData[4], (int)objData[5], (bool)objData[6], (string)objData[7]);
+            }
+            catch (Exception)
+            {
+                // ignored
+            }
+        }
+
+        private void PokemonFavouriteChanged(ISession session, object[] objData)
+        {
+            try
+            {
+                if (!(objData[0] is ulong)) return;
+                var receiverBot = BotsCollection.FirstOrDefault(x => x.Session == session);
+                if (receiverBot == null) return;
+                receiverBot.PokemonFavUpdated((ulong)objData[0], (bool)objData[1]);
             }
             catch (Exception)
             {
@@ -204,12 +219,22 @@ namespace Catchem
                 if ((ulong) objData[0] == 0) return;
                 var receiverBot = BotsCollection.FirstOrDefault(x => x.Session == session);
                 if (receiverBot == null) return;
-                receiverBot.GotNewPokemon((ulong)objData[0], (PokemonId)objData[1], (int)objData[2], (double)objData[3], (PokemonFamilyId)objData[4], (int)objData[5]);
+                receiverBot.GotNewPokemon((ulong)objData[0], (PokemonId)objData[1], (int)objData[2], (double)objData[3], (PokemonFamilyId)objData[4], (int)objData[5], false, false);
             }
             catch (Exception)
             {
                 // ignored
             }
+        }
+
+        private void SetPlayerTeam(ISession session, object[] paramObjects)
+        {
+            if (paramObjects == null || paramObjects.Length == 0 || !(paramObjects[0] is TeamColor)) return;
+            var receiverBot = BotsCollection.FirstOrDefault(x => x.Session == session);
+            if (receiverBot == null) return;
+            receiverBot.Team = (TeamColor) paramObjects[0];
+            if (CurSession == session)
+                SettingsView.BotPlayerPage.UpdatePlayerTeam();
         }
 
         private void BuildPokemonList(ISession session, object[] objData)
@@ -250,7 +275,12 @@ namespace Catchem
                     return;
                 }
                 receiverBot.ItemList.Clear();
-                ((List<ItemData>) objData[0]).ForEach(x => receiverBot.ItemList.Add(new ItemUiData(x.ItemId, x.ItemId.ToInventorySource(), x.ItemId.ToInventoryName(), x.Count)));
+                foreach (var x in ((List<ItemData>) objData[0]))
+                {
+                    if (x.Count > 0)
+                        receiverBot.ItemList.Add(new ItemUiData(x.ItemId, x.ItemId.ToInventorySource(),
+                            x.ItemId.ToInventoryName(), x.Count));
+                }
                 if (session != CurSession) return;
 
                 SettingsView.BotPlayerPage.UpdateItems(); 
@@ -393,6 +423,7 @@ namespace Catchem
                         var toRemove = SettingsView.consoleBox.Document.Blocks.ElementAt(0);
                         SettingsView.consoleBox.Document.Blocks.Remove(toRemove);
                     }
+                    SettingsView.consoleBox.ScrollToEnd();
                 }
                 await Task.Delay(10);
             }
@@ -467,6 +498,12 @@ namespace Catchem
                             case "pm_upd":
                                 PokemonChanged(message.Session, message.ParamObjects);
                                 break;
+                            case "team_set":
+                                SetPlayerTeam(message.Session, message.ParamObjects);
+                                break;
+                            case "pm_fav":
+                                PokemonFavouriteChanged(message.Session, message.ParamObjects);
+                                break;
                             case "profile_data":
                                 UpdateProfileInfo(message.Session, message.ParamObjects);
                                 break;
@@ -490,6 +527,7 @@ namespace Catchem
                 await Task.Delay(5);
             }
         }
+
         #endregion
 
         #region Controll's events
@@ -785,6 +823,14 @@ namespace Catchem
                 MessageBox.Show("There is an error while trying to delete your bot profile! ex:\r\n" + ex.Message,
                     "Error", MessageBoxButton.OK, MessageBoxImage.Error);
             }
+        }
+
+        private void InputTextBox_GotFocus(object sender, RoutedEventArgs e)
+        {
+            var tb = sender as System.Windows.Controls.TextBox;
+            if (tb == null) return;
+            if (tb.Text == @"Profile name here...")
+                tb.Text = "";
         }
     }
 }

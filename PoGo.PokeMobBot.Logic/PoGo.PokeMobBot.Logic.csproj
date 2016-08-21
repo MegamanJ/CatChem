@@ -84,6 +84,7 @@
     <Compile Include="DataDumper\IDumper.cs" />
     <Compile Include="DataDumper\Dumper.cs" />
     <Compile Include="Common\Translations.cs" />
+    <Compile Include="Event\GymPokeEvent.cs" />
     <Compile Include="Event\ItemLostEvent.cs" />
     <Compile Include="Event\NewVersionEvent.cs" />
     <Compile Include="Event\BotCompleteFailureEvent.cs" />
@@ -94,10 +95,10 @@
     <Compile Include="Event\PokemonEvolveDoneEvent.cs" />
     <Compile Include="Event\PokemonFavoriteEvent.cs" />
     <Compile Include="Event\PlayerLevelUpEvent.cs" />
-    <Compile Include="Event\PokemonUnFavoriteEvent.cs" />
     <Compile Include="Event\PokemonStatsChangedEvent.cs" />
     <Compile Include="Event\PokemonSettingsEvent.cs" />
     <Compile Include="Event\NextRouteEvent.cs" />
+    <Compile Include="Event\TeamSetEvent.cs" />
     <Compile Include="Event\UseLuckyEggMinPokemonEvent.cs" />
     <Compile Include="Event\DisplayHighestsPokemonEvent.cs" />
     <Compile Include="Event\EggHatchedEvent.cs" />
@@ -139,7 +140,9 @@
     <Compile Include="OSMRoute.cs" />
     <Compile Include="Routing.cs" />
     <Compile Include="Service\BotService.cs" />
+    <Compile Include="Tasks\FavoriteSpecificPokemonTask.cs" />
     <Compile Include="Tasks\LevelUpSpecificPokemonTask.cs" />
+    <Compile Include="Tasks\SetPlayerTeamTask.cs" />
     <Compile Include="Tasks\PlayerStatsTask.cs" />
     <Compile Include="Tasks\CatchWildPokemonsTask.cs" />
     <Compile Include="Tasks\FavoritePokemonTask.cs" />
@@ -178,6 +181,7 @@
     <Compile Include="Tasks\Login.cs" />
     <Compile Include="Tasks\RecycleSpecificItemTask.cs" />
     <Compile Include="Tasks\RecycleItemsTask.cs" />
+    <Compile Include="Tasks\RenameSpecificPokemonTask.cs" />
     <Compile Include="Tasks\RenamePokemonTask.cs" />
     <Compile Include="Tasks\SnipePokemonTask.cs" />
     <Compile Include="Tasks\TransferDuplicatePokemonTask.cs" />
