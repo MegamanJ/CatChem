@@ -24,6 +24,7 @@ using System.Net.Http;
 using PoGo.PokeMobBot.Logic.Logging;
 using System.Net;
 using System.Windows;
+using PoGo.PokeMobBot.Logic.Common;
 
 namespace Catchem.Classes
 {
@@ -217,12 +218,14 @@ namespace Catchem.Classes
             };
         }
 
-        public void UpdateXppH()
+        public void UpdateRunTime()
         {
             if (Stats == null || Math.Abs(RealWorkH) < 0.0000001)
                 Xpph = 0;
             else
                 Xpph = Stats.TotalExperience / RealWorkH;
+
+            if (Stats?.ExportStats != null) Level = Stats.ExportStats.Level;
         }
 
         public void PushNewRoutePoint(PointLatLng nextPoint)
@@ -279,6 +282,10 @@ namespace Catchem.Classes
                 GlobalSettings.LocationSettings.DefaultLongitude,
                 GlobalSettings.LocationSettings.DefaultAltitude);
             Session.Client.Login = new PokemonGo.RocketAPI.Rpc.Login(Session.Client);
+            if (Session.Translation.CurrentCode != GlobalSettings.StartUpSettings.TranslationLanguageCode)
+            {
+                Session.Translation = Translation.Load(Logic);
+            }
             LaunchBot();
         }
 
@@ -370,7 +377,7 @@ namespace Catchem.Classes
                     pokemon.Item1.Id,
                     pokemon.Item1.PokemonId,
                     pokemon.Item1.PokemonId.ToInventorySource(),
-                    pokemon.Item1.Nickname == "" ? pokemon.Item1.PokemonId.ToString() : pokemon.Item1.Nickname,
+                    pokemon.Item1.Nickname == "" ? Session.Translation.GetPokemonName(pokemon.Item1.PokemonId) : pokemon.Item1.Nickname,
                     pokemon.Item1.Cp,
                     pokemon.Item2,
                     family.FamilyId,

@@ -27,6 +27,8 @@ namespace PoGo.PokeMobBot.Logic.State
         GeoCoordinate ForceMoveTo { get; set; }
         MapzenAPI MapzenApi { get; set; }
 
+        RuntimeSettings Runtime { get; set; }
+
         bool ForceMoveJustDone { get; set; }
         void StartForceMove(double lat, double lng);
     }
@@ -42,6 +44,7 @@ namespace PoGo.PokeMobBot.Logic.State
             EventDispatcher = new EventDispatcher();
             Translation = Common.Translation.Load(logicSettings);
             Reset(settings, LogicSettings);
+            Runtime = new RuntimeSettings();
         }
 
         public ISettings Settings { get; }
@@ -51,13 +54,15 @@ namespace PoGo.PokeMobBot.Logic.State
         public Client Client { get; private set; }
         public MapzenAPI MapzenApi { get; set; }
 
+        public RuntimeSettings Runtime { get; set; }
+
         public GetPlayerResponse Profile { get; set; }
         public HumanNavigation Navigation { get; private set; }
 
         public MapCache MapCache { get; private set; }
         public ILogicSettings LogicSettings { get; }
 
-        public ITranslation Translation { get; }
+        public ITranslation Translation { get; set; }
 
         public IEventDispatcher EventDispatcher { get; }
 

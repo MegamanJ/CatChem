@@ -52,7 +52,7 @@ namespace PoGo.PokeMobBot.Logic
             for (var x = 0; x < waypoints.Count; x++)
             {
                 var nextSpeed = session.Client.rnd.NextInRange(session.LogicSettings.WalkingSpeedMin, session.LogicSettings.WalkingSpeedMax) * session.Settings.MoveSpeedFactor;
-                await navi.HumanPathWalking(waypoints.ToArray()[x], nextSpeed,
+                await navi.HumanPathWalking(session, waypoints.ToArray()[x], nextSpeed,
                     functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
                 UpdatePositionEvent?.Invoke(waypoints.ToArray()[x].Latitude, waypoints.ToArray()[x].Longitude, waypoints.ToArray()[x].Altitude);
                 //Console.WriteLine("Hit waypoint " + x);
@@ -61,12 +61,24 @@ namespace PoGo.PokeMobBot.Logic
             if (!(LocationUtils.CalculateDistanceInMeters(curcoord, destination) > 40)) return result;
             {
                 var nextSpeed = session.Client.rnd.NextInRange(session.LogicSettings.WalkingSpeedMin, session.LogicSettings.WalkingSpeedMax) * session.Settings.MoveSpeedFactor;
-                await navi.HumanPathWalking(destination, nextSpeed,
+                await navi.HumanPathWalking(session, destination, nextSpeed,
                     functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
             }
             return result;
         }
-
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="destination">Desired location to move</param>
+        /// <param name="walkingSpeedMin">Minimal walking speed during the move</param>
+        /// <param name="walkingSpeedMax">Maximal walking speed during the move</param>
+        /// <param name="functionExecutedWhileWalking">Functions #1 to be exec while walking, like task or smth</param>
+        /// <param name="functionExecutedWhileWalking2">Functions #1 to be exec while walking, like task or smth</param>
+        /// <param name="cancellationToken">regular session cancelation token</param>
+        /// <param name="session">ISession param of the bot, to detect which bot started it</param>
+        /// <param name="direct">Directly move to the point, skip routing services</param>
+        /// <param name="waypointsToVisit">Waypoints to visit during the move, required to redure Google Directions API usage</param>
+        /// <returns></returns>
         public async Task<PlayerUpdateResponse> Move(GeoCoordinate destination, double walkingSpeedMin, double walkingSpeedMax, Func<Task<bool>> functionExecutedWhileWalking, Func<Task<bool>> functionExecutedWhileWalking2,
             CancellationToken cancellationToken, ISession session, bool direct = false, List<GeoCoordinate> waypointsToVisit = null )
         {
@@ -136,6 +148,7 @@ namespace PoGo.PokeMobBot.Logic
 	                }
 
                     if (routingResponse?.Coordinates != null)
+                    {
                         foreach (var item in routingResponse.Coordinates)
                         {
                             if (item == null) continue;
@@ -143,22 +156,24 @@ namespace PoGo.PokeMobBot.Logic
                             switch (session.LogicSettings.RoutingService)
                             {
                                 case RoutingService.MobBot:
-                                    waypoints.Add(new GeoCoordinate(item.ToArray()[1], item.ToArray()[0],
-                                        session.LogicSettings.UseMapzenApiElevation
-                                            ? await session.MapzenApi.GetAltitude(item.ToArray()[1], item.ToArray()[0])
-                                            : 0));
+                                    waypoints.Add(new GeoCoordinate(item[1], item[0]));
                                     break;
                                 case RoutingService.OpenLs:
-                                    waypoints.Add(new GeoCoordinate(item.ToArray()[1], item.ToArray()[0], item.ToArray()[2]));
+                                    waypoints.Add(new GeoCoordinate(item.ToArray()[1], item.ToArray()[0],
+                                        item.ToArray()[2]));
                                     break;
                                 case RoutingService.GoogleDirections:
-                                    waypoints.Add(new GeoCoordinate(item[0], item[1],
-                                        session.LogicSettings.UseMapzenApiElevation
-                                            ? await session.MapzenApi.GetAltitude(item[0], item[1])
-                                            : 0));
+                                    waypoints.Add(new GeoCoordinate(item[0], item[1]));
                                     break;
                             }
                         }
+                        if ((session.LogicSettings.RoutingService == RoutingService.GoogleDirections 
+                            || session.LogicSettings.RoutingService == RoutingService.MobBot) && session.LogicSettings.UseMapzenApiElevation )
+                        {
+                            waypoints = await session.MapzenApi.FillAltitude(waypoints);
+                        }
+                    }
+
                 }
 
                 if (waypoints.Count == 0)
@@ -170,6 +185,7 @@ namespace PoGo.PokeMobBot.Logic
                     {
                         Coords = nextPath
                     });
+                    destination = waypoints.Last();
                 }
 
 
@@ -208,8 +224,8 @@ namespace PoGo.PokeMobBot.Logic
 
                     var nextSpeed = session.Client.rnd.NextInRange(walkingSpeedMin, walkingSpeedMax)*session.Settings.MoveSpeedFactor;
 
-                    result = await navi.HumanPathWalking(t, nextSpeed, functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
-                    if (RuntimeSettings.BreakOutOfPathing)
+                    result = await navi.HumanPathWalking(session, t, nextSpeed, functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
+                    if (session.Runtime.BreakOutOfPathing)
                         return result;
                     UpdatePositionEvent?.Invoke(t.Latitude, t.Longitude, t.Altitude);
                     //Console.WriteLine("Hit waypoint " + x);
@@ -219,15 +235,15 @@ namespace PoGo.PokeMobBot.Logic
                 {
                     var nextSpeed = session.Client.rnd.NextInRange(walkingSpeedMin, walkingSpeedMax)*session.Settings.MoveSpeedFactor;
 
-                    result = await navi.HumanPathWalking(destination, nextSpeed, functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
+                    result = await navi.HumanPathWalking(session, destination, nextSpeed, functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
                 }
             }
             else
             {
-                if (destination.Latitude.Equals(RuntimeSettings.lastPokeStopCoordinate.Latitude) && destination.Longitude.Equals(RuntimeSettings.lastPokeStopCoordinate.Longitude))
-                    RuntimeSettings.BreakOutOfPathing = true;
+                if (destination.Latitude.Equals(session.Runtime.lastPokeStopCoordinate.Latitude) && destination.Longitude.Equals(session.Runtime.lastPokeStopCoordinate.Longitude))
+                    session.Runtime.BreakOutOfPathing = true;
 
-                if (RuntimeSettings.BreakOutOfPathing)
+                if (session.Runtime.BreakOutOfPathing)
                 {
                     await MaintenanceTask.Execute(session, cancellationToken);
                     return result;
@@ -238,7 +254,7 @@ namespace PoGo.PokeMobBot.Logic
                 {
                     var nextSpeed = session.Client.rnd.NextInRange(walkingSpeedMin, walkingSpeedMax)*session.Settings.MoveSpeedFactor;
 
-                    result = await navi.HumanPathWalking(destination, nextSpeed, functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
+                    result = await navi.HumanPathWalking(session, destination, nextSpeed, functionExecutedWhileWalking, functionExecutedWhileWalking2, cancellationToken);
                 }
             }
             await MaintenanceTask.Execute(session, cancellationToken);
