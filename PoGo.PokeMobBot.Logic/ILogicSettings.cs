@@ -70,7 +70,7 @@ namespace PoGo.PokeMobBot.Logic
 		bool StopBotToAvoidBanOnUnknownLoginError { get; }
         bool AutoCompleteTutorial { get; }
         string DesiredNickname { get; }
-       
+        bool BeLikeRobot { get; }
 
         //coords and movement
         bool Teleport { get; }
@@ -113,6 +113,7 @@ namespace PoGo.PokeMobBot.Logic
         //incubator
         bool UseEggIncubators { get; } 
         bool AlwaysPrefferLongDistanceEgg { get; }
+        bool UseOnlyUnlimitedIncubator { get; }
         
 		//display
         bool DisplayPokemonMaxPoweredCp { get; }

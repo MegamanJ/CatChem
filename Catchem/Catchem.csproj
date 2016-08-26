@@ -67,7 +67,7 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="Google.Protobuf, Version=3.0.0.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
-      <HintPath>..\packages\Google.Protobuf.3.0.0-beta4\lib\net45\Google.Protobuf.dll</HintPath>
+      <HintPath>..\packages\Google.Protobuf.3.0.0\lib\net45\Google.Protobuf.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="MahApps.Metro, Version=1.2.4.0, Culture=neutral, PublicKeyToken=f4fb5a3c4d1e5b4f, processorArchitecture=MSIL">
@@ -121,7 +121,11 @@
     <Compile Include="Classes\Adb.cs" />
     <Compile Include="Classes\BotRpcMessage.cs" />
     <Compile Include="Classes\BotWindowData.cs" />
+    <Compile Include="Classes\CatchemNotified.cs" />
     <Compile Include="Classes\Telegram.cs" />
+    <Compile Include="Events\TelegramPokemonCaughtEvent.cs" />
+    <Compile Include="Events\TelegramMessageEvent.cs" />
+    <Compile Include="Events\TelegramCommandEvent.cs" />
     <Compile Include="Extensions\AsyncHelpers.cs" />
     <Compile Include="Extensions\Converters.cs" />
     <Compile Include="Extensions\Extensions.cs" />
@@ -312,7 +316,7 @@
       <Project>{a03a7bb2-4f0b-467b-84b2-9a76e6aae6fb}</Project>
       <Name>POGOProtos</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PokemonGoAPI\PokemonGo.RocketAPI\PokemonGo.RocketAPI.csproj">
+    <ProjectReference Include="..\PoGoAPI\PoGo.RocketAPI\PoGo.RocketAPI.csproj">
       <Project>{05d2da44-1b8e-4cf7-94ed-4d52451cd095}</Project>
       <Name>PokemonGo.RocketAPI</Name>
     </ProjectReference>
