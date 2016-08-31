@@ -45,6 +45,9 @@ namespace PoGo.PokeMobBot.Logic.Tasks
 
             //TODO: run through this with a fine-tooth comb and optimize it.
             var pokestopList = await GetPokeStops(session);
+
+            session.EventDispatcher.Send(new PokeStopListEvent { Forts = pokestopList.Select(x => x.BaseFortData).ToList() });
+
             for (int stopsHit = 0; stopsHit < stopsToHit; stopsHit++)
             {
                 session.Runtime.BreakOutOfPathing = false;
@@ -86,8 +89,6 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                             Message = session.Translation.GetTranslation(TranslationString.FarmPokestopsNoUsableFound)
                         });
                     }
-
-                    session.EventDispatcher.Send(new PokeStopListEvent { Forts = session.MapCache.baseFortDatas.ToList() });
 
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -152,6 +153,13 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                         
                         cancellationToken, session);
                     }
+
+                    if (!session.LogicSettings.LootPokestops)
+                    {
+                        session.MapCache.UsedPokestop(pokeStop, session);
+                        continue;
+                    }
+
                     if (!session.ForceMoveJustDone)
                     {
                         FortSearchResponse fortSearch;
@@ -277,6 +285,9 @@ namespace PoGo.PokeMobBot.Logic.Tasks
             var pokestopList = await GetPokeStops(session);
             //var stopsHit = 0; //Replaced with RuntimeSettings.stopsHit;
             //var displayStatsHit = 0;
+
+            session.EventDispatcher.Send(new PokeStopListEvent { Forts = pokestopList.Select(x=>x.BaseFortData).ToList() });
+
             var eggWalker = new EggWalker(1000, session);
 
             if (pokestopList.Count <= 0)
@@ -319,15 +330,18 @@ namespace PoGo.PokeMobBot.Logic.Tasks
 #if DEBUG
                             Logger.Write("Skipping Pokestop due to the rng god's will.", LogLevel.Debug);
 #endif
-                            pokestopList.RemoveAt(0);
+                            if (pokestopList.Count > 0)
+                                pokestopList.RemoveAt(0);
                         }
                     }
                 }
+                if (pokestopList.Count == 0)
+                    break;
 
                 var pokeStop = pokestopList[0];
                 pokestopList.RemoveAt(0);
 
-                if (session.LogicSettings.RoutingService == RoutingService.GoogleDirections)
+                if (session.LogicSettings.RoutingService == RoutingService.GoogleDirections || session.LogicSettings.RoutingService == RoutingService.MapzenValhalla)
                 {
                     bestRoute = RoutingUtils.GetBestRoute(pokeStop, pokestopList.Where(x => !session.MapCache.CheckPokestopUsed(x)), 20);
                     session.EventDispatcher.Send(new PokestopsOptimalPathEvent()
@@ -363,7 +377,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                         return true;
 
                     } ,
-                    cancellationToken, session, waypointsToVisit: bestRoute);
+                    cancellationToken, session, waypointsToVisit: bestRoute, eggWalker: eggWalker);
                 if (!session.ForceMoveJustDone)
                 {
                     var timesZeroXPawarded = 0;
@@ -468,8 +482,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
             //var mapObjects = await session.Client.Map.GetMapObjects();
 
             List<FortCacheItem> pokeStops = await session.MapCache.FortDatas(session);
-
-            session.EventDispatcher.Send(new PokeStopListEvent { Forts = session.MapCache.baseFortDatas.ToList() });
+            
 
             // Wasn't sure how to make this pretty. Edit as needed.
             if (session.LogicSettings.Teleport)

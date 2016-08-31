@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using PoGo.PokeMobBot.Logic.Common;
 using PoGo.PokeMobBot.Logic.Event;
 using PoGo.PokeMobBot.Logic.Extensions;
+using PoGo.PokeMobBot.Logic.Logging;
 using PoGo.PokeMobBot.Logic.PoGoUtils;
 using PoGo.PokeMobBot.Logic.State;
 using PoGo.PokeMobBot.Logic.Utils;
@@ -26,7 +27,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
         public static async Task<bool> Execute(ISession session, dynamic encounter, PokemonCacheItem pokemon, CancellationToken cancellationToken,
             FortData currentFortData = null, ulong encounterId = 0)
         {
-            if (!await CheckBotStateTask.Execute(session, cancellationToken)) return false;
+            //if (!await CheckBotStateTask.Execute(session, cancellationToken)) return false;
             if (encounter is EncounterResponse && pokemon == null)
                 throw new ArgumentException("Parameter pokemon must be set, if encounter is of type EncounterResponse",
                     nameof(pokemon));
@@ -100,6 +101,10 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                     normalizedRecticleSize =
                         Rng.NextInRange(session.LogicSettings.ThrowAccuracyMin, session.LogicSettings.ThrowAccuracyMax)*
                         1.85 + 0.1; // 0.1..1.95
+                    if (normalizedRecticleSize > 1.95)
+                        normalizedRecticleSize = 1.95;
+                    else if (normalizedRecticleSize < 0.1)
+                        normalizedRecticleSize = 0.1;
                     spinModifier = Rng.NextDouble() > session.LogicSettings.ThrowSpinFrequency ? 0.0 : 1.0;
                 }
                 else
@@ -107,7 +112,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                     normalizedRecticleSize = 1.95;
                     spinModifier = 1.00;
                 }
-                                Func<ItemId, string> returnRealBallName = a =>
+                Func<ItemId, string> returnRealBallName = a =>
                 {
                     switch (a)
                     {
@@ -134,7 +139,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                     return a > 1.6 ? "Excellent! " : "unknown ";
                 };
                 var hit = Rng.NextDouble() > session.LogicSettings.MissChance;
-                Logging.Logger.Write($"Throwing {(Math.Abs(spinModifier - 1) < 0.00001 ?"Spinning " : "" )}{getThrowType(normalizedRecticleSize)}{returnRealBallName(pokeball)} - {(hit ? "WILL HIT" : "WILL MISS")}", Logging.LogLevel.Caught, session: session);
+                Logger.Write($"Throwing {(Math.Abs(spinModifier - 1) < 0.00001 ?"Spinning " : "" )}{getThrowType(normalizedRecticleSize)}{returnRealBallName(pokeball)} - {(hit ? "WILL HIT" : "WILL MISS")}", Logging.LogLevel.Caught, session: session);
                 caughtPokemonResponse =
                     await session.Client.Encounter.CatchPokemon(
                         encounter is EncounterResponse || encounter is IncenseEncounterResponse
@@ -182,15 +187,29 @@ namespace PoGo.PokeMobBot.Logic.Tasks
 
                     if (family != null)
                     {
+                       
+
                         family.Candy_ += caughtPokemonResponse.CaptureAward.Candy.Sum();
                         evt.Family = family.FamilyId;
                         evt.FamilyCandies = family.Candy_;
+                        evt.Type1 = setting.Type;
+                        evt.Type2 = setting.Type2;
+                        evt.Stats = setting.Stats;
+                        evt.CandyToEvolve = setting.CandyToEvolve;
+                        PokemonData poke = encounter is EncounterResponse ? encounter.WildPokemon?.PokemonData : encounter?.PokemonData;
+                        if (poke != null)
+                        {
+                            evt.Stamina = poke.Stamina;
+                            evt.MaxStamina = poke.StaminaMax;
+                        }
                     }
                     else
                     {
                         evt.FamilyCandies = caughtPokemonResponse.CaptureAward.Candy.Sum();
                     }
                     session.MapCache.PokemonCaught(pokemon);
+
+                    Logger.Write($"[Catch Dump] Caught {pokemon.PokemonId} - Coords[Lat: {lat} - Lng: {lng}]");
                 }
                 else if (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchFlee)
                 {
@@ -216,7 +235,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                 {
                     evt.Level = PokemonInfo.GetLevel(pokeData);
                     evt.Cp = pokeData.Cp;
-                    evt.MaxCp = PokemonInfo.CalculateMaxCp(pokeData);
+                    evt.MaxCp = (int)PokemonInfo.GetMaxCpAtTrainerLevel(pokeData, session.Runtime.CurrentLevel);
                     evt.Perfection = Math.Round(pokeData.CalculatePokemonPerfection(), 2);
                     evt.Probability =
                         Math.Round(probability*100, 2);
@@ -224,17 +243,19 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                     evt.Move1 = pokeData.Move1;
                     evt.Move2 = pokeData.Move2;
 
+                    evt.PossibleCp = (int)PokemonInfo.GetMaxCpAtTrainerLevel(pokeData, 40);
+
                 }
                 evt.Distance = distance;
                 evt.Pokeball = pokeball;
                 evt.Attempt = attemptCounter;
-                await session.Inventory.RefreshCachedInventory();
+                //await session.Inventory.RefreshCachedInventory();
                 evt.BallAmount = await session.Inventory.GetItemAmountByType(pokeball);
 
                 session.EventDispatcher.Send(evt);
 
                 attemptCounter++;
-                    await Task.Delay(session.LogicSettings.DelayCatchPokemon);
+                    await Task.Delay(session.LogicSettings.DelayCatchPokemon, cancellationToken);
             } while (caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchMissed ||
                      caughtPokemonResponse.Status == CatchPokemonResponse.Types.CatchStatus.CatchEscape);
             session.State = prevState;

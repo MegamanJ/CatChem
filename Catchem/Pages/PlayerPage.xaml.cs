@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Threading;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using Catchem.Classes;
 using Catchem.Extensions;
@@ -100,6 +101,7 @@ namespace Catchem.Pages
             if (inputDialog.ShowDialog() != true) return;
             if (int.TryParse(inputDialog.Answer, out amount))
                 RecycleItem(CurSession, item, amount, _bot.CancellationToken);
+
         }
 
         private async void RecycleItem(ISession session, ItemUiData item, int amount, CancellationToken cts)
@@ -188,7 +190,8 @@ namespace Catchem.Pages
             l_Pokemons_transfered.Content = _bot.Stats.TotalPokemonsTransfered;
             l_Pokestops_farmed.Content = _bot.Stats.TotalPokestops;
             l_level.Content = _bot.Stats.ExportStats.Level;
-            l_level_nextime.Content = $"{_bot.Stats.ExportStats.HoursUntilLvl.ToString("00")}:{_bot.Stats.ExportStats.MinutesUntilLevel.ToString("00")}";
+            NextLevelInTextBox.Text = $"{_bot.Stats.ExportStats.HoursUntilLvl.ToString("00")}:{_bot.Stats.ExportStats.MinutesUntilLevel.ToString("00")} ({_bot.Stats.ExportStats.CurrentXp}/{_bot.Stats.ExportStats.LevelupXp})";
+            LevelProgressBar.Value = (int)(_bot.Stats.ExportStats.CurrentXp*100/_bot.Stats.ExportStats.LevelupXp);
         }
 
         public void ClearData()

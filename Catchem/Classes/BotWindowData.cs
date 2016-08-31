@@ -252,7 +252,11 @@ namespace Catchem.Classes
             else
                 Xpph = Stats.TotalExperience / RealWorkH;
 
-            if (Stats?.ExportStats != null) Level = Stats.ExportStats.Level;
+            if (Stats?.ExportStats != null)
+            {
+                Level = Stats.ExportStats.Level;
+                Session.Runtime.CurrentLevel = Level;
+            }
         }
 
         public void PushNewRoutePoint(PointLatLng nextPoint)
@@ -286,11 +290,17 @@ namespace Catchem.Classes
             Started = false;
             ErrorsCount = 0;
             Session.Client.Login.UpdateHash();
+            if (ForceMoveMarker != null)
+            {
+                ForceMoveMarker?.Map?.Markers?.Remove(ForceMoveMarker);
+                ForceMoveMarker = null;
+            }
             if (soft) return;
             _realWorkSec = 0;
             if (Stats == null) return;
             Stats.TotalPokemons = 0;
             Stats.TotalPokestops = 0;
+            Stats.TotalExperience = 0;
         }
 
         public async void Start()
@@ -406,7 +416,7 @@ namespace Catchem.Classes
                     this,
                     pokemon.Item1.Id,
                     pokemon.Item1.PokemonId,
-                    pokemon.Item1.PokemonId.ToInventorySource(),
+                    //pokemon.Item1.PokemonId.ToInventorySource(),
                     pokemon.Item1.Nickname == "" ? Session.Translation.GetPokemonName(pokemon.Item1.PokemonId) : pokemon.Item1.Nickname,
                     pokemon.Item1.Cp,
                     pokemon.Item2,
@@ -417,19 +427,27 @@ namespace Catchem.Classes
                     !string.IsNullOrEmpty(pokemon.Item1.DeployedFortId),
                     PokemonInfo.GetLevel(pokemon.Item1),
                     pokemon.Item1.Move1,
-                    pokemon.Item1.Move2);
+                    pokemon.Item1.Move2,
+                    setting.Type,
+                    setting.Type2,
+                    (int)PokemonInfo.GetMaxCpAtTrainerLevel(pokemon.Item1, Level),
+                    PokemonInfo.GetBaseStats(pokemon.Item1.PokemonId),
+                    pokemon.Item1.Stamina,
+                    pokemon.Item1.StaminaMax,
+                    (int)PokemonInfo.GetMaxCpAtTrainerLevel(pokemon.Item1, 40),
+                    setting.CandyToEvolve);
                 PokemonList.Add(mon);
                 mon.UpdateTags(Logic);
             }
         }
 
-        public void GotNewPokemon(ulong uid, PokemonId pokemonId, int cp, double iv, PokemonFamilyId family, int candy, bool fav, bool inGym, double level, PokemonMove move1, PokemonMove move2)
+        public void GotNewPokemon(ulong uid, PokemonId pokemonId, int cp, double iv, PokemonFamilyId family, int candy, bool fav, bool inGym, double level, PokemonMove move1, PokemonMove move2, PokemonType type1, PokemonType type2, int maxCp, int stamina, int maxStamina, int possibleCp, int candyToEvolve)
         {
             PokemonList.Add(new PokemonUiData(
                     this,
                     uid,
                     pokemonId,
-                    pokemonId.ToInventorySource(),
+                    //pokemonId.ToInventorySource(),
                     pokemonId.ToString(),
                     cp,
                     iv,
@@ -440,7 +458,15 @@ namespace Catchem.Classes
                     inGym,
                     level,
                     move1,
-                    move2));
+                    move2, 
+                    type1, 
+                    type2,
+                    maxCp,
+                    PokemonInfo.GetBaseStats(pokemonId),
+                    stamina,
+                    maxStamina,
+                    possibleCp,
+                    candyToEvolve));
             foreach (var pokemon in PokemonList.Where(x => x.Family == family))
             {
                 pokemon.Candy = candy;
@@ -556,13 +582,17 @@ namespace Catchem.Classes
                 var stardustSec = tooMuchStarDust
                     ? (StardustRate - GlobalSettings.CatchSettings.MaxStarDustPerHour) / GlobalSettings.CatchSettings.MaxStarDustPerHour * 60 * 60 : 0;
 
-                var stopSec = 10 * 60 + _rnd.Next(60 * 5) + (int)(new double[] { pokestopSec, pokemonSec, xpSec, stardustSec }).Max();
+                var stopSec = 10 * 60 + _rnd.Next(60 * 5) + (int)(new [] { pokestopSec, pokemonSec, xpSec, stardustSec }).Max();
                 var stopMs = stopSec * 1000;
+
+//#if DEBUG
+//                stopMs /= 1000;
+//#endif
 
                 Session.EventDispatcher.Send(new WarnEvent
                 {
                     Message =
-                        $"Max amount of Pokemon ({PokemonsRate.ToN1()})/Pokestops ({PokestopsRate.ToN1()})/XP ({Xpph.ToN1()})/Star Dust ({StardustRate.ToN1()}) per hour reached, bot will be stoped for {(stopMs/60000).ToString("N1")} minutes"
+                        $"Max amount of Pokemon ({PokemonsRate.ToN1()})/Pokestops ({PokestopsRate.ToN1()})/XP ({Xpph.ToN1()})/Star Dust ({StardustRate.ToN1()}) per hour reached, bot will be stopped for {(stopMs/60000).ToString("N1")} minutes"
                 });
                 _realWorkSec += stopSec;
                 Stop(true);
@@ -581,12 +611,13 @@ namespace Catchem.Classes
                     Message = "Bot pause routine canceled"
                 });
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 Session.EventDispatcher.Send(new WarnEvent
                 {
                     Message = "Bot pause routine failed badly"
                 });
+                Logger.Write($"[PAUSE FAIL] Error: {ex.Message}", LogLevel.Error);
             }
         }
     }

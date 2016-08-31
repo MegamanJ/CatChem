@@ -15,6 +15,7 @@ using POGOProtos.Inventory.Item;
 using GeoCoordinatePortable;
 using Google.Protobuf;
 using PoGo.PokeMobBot.Logic.API;
+using PoGo.PokeMobBot.Logic.PoGoUtils;
 
 #endregion
 
@@ -107,6 +108,7 @@ namespace PoGo.PokeMobBot.Logic
     {
 		public int StopsHit = 0;
         public int PokestopsToCheckGym = 0;
+        public int CurrentLevel = 0;
         public DateTime StartTime = DateTime.Now;
         public bool DelayingScan = false;
         public int PokemonScanDelay = 10000;// in ms
@@ -135,7 +137,7 @@ namespace PoGo.PokeMobBot.Logic
 
     public class DeviceSettings
     {
-	    private static Random random = new Random();
+	    private static Random random = new Random(); 
         public static IDictionary<string, string> phone_item = RandomPhone();
 
         public string DeviceId = RandomString(16, "0123456789abcdef"); // "ro.build.id";
@@ -889,7 +891,7 @@ namespace PoGo.PokeMobBot.Logic
         public int DelayDisplayPokemon = r.Next(FirstRunMin, FirstRunMax);
         public int DelayUseLuckyEgg = r.Next(FirstRunMin, FirstRunMax);
         public int DelaySoftbanRetry = r.Next(FirstRunMin, FirstRunMax);
-        public int DelayRecyleItem = r.Next(FirstRunMin, FirstRunMax);
+        public int DelayRecycleItem = r.Next(FirstRunMin, FirstRunMax);
         public int DelaySnipePokemon = r.Next(FirstRunMin, FirstRunMax);
         public int MinDelayBetweenSnipes = 10000;
         public double SnipingScanOffset = 0.003;
@@ -969,8 +971,8 @@ namespace PoGo.PokeMobBot.Logic
         public double WalkingSpeedMax = random.Next(10, 16);
         public int MaxSpawnLocationOffset = 10;
         public int MaxTravelDistanceInMeters = 5000;
-        public bool UseGpxPathing = false;
-        public string GpxFile = "GPXPath.GPX";
+        public bool UseCustomRoute = false;
+        public string CustomRouteName = "";
         public bool UsePokeStopLuckyNumber = true;
         public int PokestopSkipLuckyNumberMinUse = 3;
         public int PokestopSkipLuckyNumber = 1;
@@ -983,6 +985,11 @@ namespace PoGo.PokeMobBot.Logic
 		public bool UseMapzenApiElevation = false;
         public string MapzenApiElevationKey = "";
         public string GoogleDirectionsApiKey = "";
+        public string MapzenValhallaApiKey = "";
+        public string MobBotRoutingApiKey = "";
+
+        [JsonIgnore]
+        public CustomRoute CustomRoute;
     }
 
     public class CatchSettings
@@ -1007,6 +1014,8 @@ namespace PoGo.PokeMobBot.Logic
         public int MaxXPPerHour = 10000;
         public int MaxStarDustPerHour = 20000;
         public double MissChance = 0.21;
+
+        public bool LootPokestops = true;
 
         //berries
         public int UseBerryMinCp = 1000;
@@ -1443,7 +1452,7 @@ namespace PoGo.PokeMobBot.Logic
                         settings.DelaySettings.DelayDisplayPokemon = random.Next(settings.DelaySettings.MinRandomizeDelayMilliseconds, settings.DelaySettings.MaxRandomizeDelayMilliseconds);
                         settings.DelaySettings.DelayUseLuckyEgg = random.Next(settings.DelaySettings.MinRandomizeDelayMilliseconds, settings.DelaySettings.MaxRandomizeDelayMilliseconds);
                         settings.DelaySettings.DelaySoftbanRetry = random.Next(settings.DelaySettings.MinRandomizeDelayMilliseconds, settings.DelaySettings.MaxRandomizeDelayMilliseconds);
-                        settings.DelaySettings.DelayRecyleItem = random.Next(settings.DelaySettings.MinRandomizeDelayMilliseconds, settings.DelaySettings.MaxRandomizeDelayMilliseconds);
+                        settings.DelaySettings.DelayRecycleItem = random.Next(settings.DelaySettings.MinRandomizeDelayMilliseconds, settings.DelaySettings.MaxRandomizeDelayMilliseconds);
                         settings.DelaySettings.DelaySnipePokemon = random.Next(settings.DelaySettings.MinRandomizeDelayMilliseconds, settings.DelaySettings.MaxRandomizeDelayMilliseconds);
                     }
                     if (settings.LocationSettings.UseMapzenApiElevation)
@@ -1772,8 +1781,7 @@ namespace PoGo.PokeMobBot.Logic
         public int KeepMinDuplicatePokemon => _settings.PokemonSettings.KeepMinDuplicatePokemon;
         public bool PrioritizeIvOverCp => _settings.PokemonSettings.PrioritizeIvOverCp;
         public int MaxTravelDistanceInMeters => _settings.LocationSettings.MaxTravelDistanceInMeters;
-        public string GpxFile => _settings.LocationSettings.GpxFile;
-        public bool UseGpxPathing => _settings.LocationSettings.UseGpxPathing;
+        public bool UseCustomRoute => _settings.LocationSettings.UseCustomRoute;
         public bool UsePokeStopLuckyNumber => _settings.LocationSettings.UsePokeStopLuckyNumber;
         public int PokestopSkipLuckyNumberMinUse => _settings.LocationSettings.PokestopSkipLuckyNumberMinUse;
         public int PokestopSkipLuckyNumber => _settings.LocationSettings.PokestopSkipLuckyNumber;
@@ -1805,6 +1813,10 @@ namespace PoGo.PokeMobBot.Logic
         public int MinPokeballsWhileSnipe => _settings.SnipeSettings.MinPokeballsWhileSnipe;
         public int MaxPokeballsPerPokemon => _settings.CatchSettings.MaxPokeballsPerPokemon;
         public SnipeSettings PokemonToSnipe => _settings.PokemonToSnipe;
+
+        public bool LootPokestops => _settings.CatchSettings.LootPokestops;
+
+        public CustomRoute CustomRoute => _settings.LocationSettings.CustomRoute;
         public string SnipeLocationServer => _settings.SnipeSettings.SnipeLocationServer;
         public int SnipeLocationServerPort => _settings.SnipeSettings.SnipeLocationServerPort;
         public bool UseSnipeLocationServer => _settings.SnipeSettings.UseSnipeLocationServer;
@@ -1843,7 +1855,7 @@ namespace PoGo.PokeMobBot.Logic
         public int DelayUseLuckyEgg => _settings.DelaySettings.DelayUseLuckyEgg;
         public int DelaySoftbanRetry => _settings.DelaySettings.DelaySoftbanRetry;
         public int DelayPokestop => _settings.DelaySettings.DelayPokestop;
-        public int DelayRecyleItem => _settings.DelaySettings.DelayRecyleItem;
+        public int DelayRecycleItem => _settings.DelaySettings.DelayRecycleItem;
         public int DelaySnipePokemon => _settings.DelaySettings.DelaySnipePokemon;
         public int DelayTransferPokemon => _settings.DelaySettings.DelayTransferPokemon;
         public int DelayEvolvePokemon => _settings.DelaySettings.DelayEvolvePokemon;
@@ -1869,6 +1881,8 @@ namespace PoGo.PokeMobBot.Logic
         public bool UseMapzenApiElevation => _settings.LocationSettings.UseMapzenApiElevation;
         public string MapzenApiElevationKey => _settings.LocationSettings.MapzenApiElevationKey;
         public string GoogleDirectionsApiKey => _settings.LocationSettings.GoogleDirectionsApiKey;
+        public string MobBotRoutingApiKey => _settings.LocationSettings.MobBotRoutingApiKey;
+        public string MapzenValhallaApiKey => _settings.LocationSettings.MapzenValhallaApiKey;
         public bool PrioritizeBothIvAndCpForTransfer => _settings.PokemonSettings.PrioritizeBothIvAndCpForTransfer;
         public int MinRandomizeDelayMilliseconds => _settings.DelaySettings.MinRandomizeDelayMilliseconds;
         public int MaxRandomizeDelayMilliseconds => _settings.DelaySettings.MaxRandomizeDelayMilliseconds;
@@ -1882,6 +1896,7 @@ namespace PoGo.PokeMobBot.Logic
     {
         MobBot,
         OpenLs,
-        GoogleDirections
+        GoogleDirections,
+        MapzenValhalla
     }
 }

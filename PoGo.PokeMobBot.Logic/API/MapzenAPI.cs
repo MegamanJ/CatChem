@@ -131,6 +131,7 @@ namespace PoGo.PokeMobBot.Logic.API
                     request.Proxy.Credentials = CredentialCache.DefaultCredentials;
 
                 request.AutomaticDecompression = DecompressionMethods.GZip;
+                request.Timeout = 60000;
                 using (var response = (HttpWebResponse)request.GetResponse())
                 using (var stream = response.GetResponseStream())
                     if (stream != null)
@@ -211,7 +212,8 @@ namespace PoGo.PokeMobBot.Logic.API
         }
         public bool CheckForExistingAltitude(double lat, double lon)
         {
-            return _knownAltitude.Any(x => LocationUtils.CalculateDistanceInMeters(x.Lat, x.Lon, lat, lon) < 30);
+            var knownTemp = _knownAltitude.ToArray();
+            return knownTemp.Any(x => LocationUtils.CalculateDistanceInMeters(x.Lat, x.Lon, lat, lon) < 30);
         }
 
         public double GetExistingAltitude(double lat, double lon)
@@ -257,10 +259,9 @@ namespace PoGo.PokeMobBot.Logic.API
                 List<GeoCoordinate> pointsToRequest = new List<GeoCoordinate>();
                 foreach (var point in points)
                 {
-                    if (CheckForExistingAltitude(point.Latitude, point.Longitude))
-                    {
-                        point.Altitude = GetExistingAltitude(point.Latitude, point.Longitude);
-                    }
+                    if (pointsToRequest.Any( x=> LocationUtils.CalculateDistanceInMeters(x, point) <= 30)) continue;
+                    if (CheckForExistingAltitude(point.Latitude, point.Longitude)) continue;
+                    
                     pointsToRequest.Add(point);
                 }
                 var heights = await RequestHeights(pointsToRequest);
@@ -275,6 +276,17 @@ namespace PoGo.PokeMobBot.Logic.API
                             Lon = pointsToRequest[index].Longitude,
                             Alt = pointsToRequest[index].Altitude
                         });
+                    }
+                }
+                foreach (var point in points)
+                {
+                    if (CheckForExistingAltitude(point.Latitude, point.Longitude))
+                    {
+                        point.Altitude = GetExistingAltitude(point.Latitude, point.Longitude);
+                    }
+                    else
+                    {
+                        point.Altitude = _session != null ? RandomExtensions.NextInRange(R, _session.Settings.DefaultAltitudeMin, _session.Settings.DefaultAltitudeMax) : R.Next(10, 120);
                     }
                 }
             }

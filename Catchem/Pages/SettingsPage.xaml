@@ -5,7 +5,7 @@
              xmlns:local="clr-namespace:Catchem"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              Width="890.487"
-             Height="1933.5"
+             Height="2107.5"
              mc:Ignorable="d">
     <Grid Background="#FFF9F9F9">
         <ScrollViewer Grid.ColumnSpan="2">
@@ -314,7 +314,7 @@
                                 Checked="BotPropertyChanged"
                                 Content="Rename Poke"
                                 Unchecked="BotPropertyChanged" />
-                        <CheckBox x:Name="c_AutoLevelPokemons"
+                        <CheckBox x:Name="c_AutomaticallyLevelUpPokemon"
                                 Margin="10,342,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
@@ -429,7 +429,7 @@
                 </GroupBox>
 
                 <GroupBox x:Name="catchGroupBox"
-                        Height="640"
+                        Height="664"
                         Margin="0,878,0,0"
                         VerticalAlignment="Top"
                         Header="Catch"
@@ -662,7 +662,7 @@
                         <CheckBox x:Name="c_PauseBotOnMaxHourlyRates"
                                 Width="207"
                                 Height="16"
-                                Margin="13,463,0,0"
+                                Margin="13,484,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Checked="BotPropertyChanged"
@@ -671,14 +671,14 @@
                         <Label x:Name="c_MaxCatchPerHourLabel"
                                 Width="210"
                                 Height="26"
-                                Margin="9,484,0,0"
+                                Margin="9,507,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Content="Max Catch Per Hour" />
                         <TextBox x:Name="c_MaxCatchPerHour"
                                 Grid.Column="1"
                                 Height="29"
-                                Margin="5,483,10,0"
+                                Margin="5,506,10,0"
                                 VerticalAlignment="Top"
                                 Template="{StaticResource pogo}"
                                 Text="0"
@@ -687,14 +687,14 @@
                         <Label x:Name="c_MaxPokestopsPerHourLabel"
                                 Width="210"
                                 Height="26"
-                                Margin="9,518,0,0"
+                                Margin="9,541,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Content="Max Pokestops Per Hour" />
                         <TextBox x:Name="c_MaxPokestopsPerHour"
                                 Grid.Column="1"
                                 Height="29"
-                                Margin="5,517,10,0"
+                                Margin="5,540,10,0"
                                 VerticalAlignment="Top"
                                 Template="{StaticResource pogo}"
                                 Text="0"
@@ -703,7 +703,7 @@
                         <TextBox x:Name="c_MaxXPPerHour"
                         	Grid.Column="1"
                         	Height="29"
-                        	Margin="5,551,10,0"
+                        	Margin="5,574,10,0"
                         	VerticalAlignment="Top"
                         	Template="{StaticResource pogo}"
                         	Text="0"
@@ -712,7 +712,7 @@
                         <TextBox x:Name="c_MaxStarDustPerHour"
                         	Grid.Column="1"
                         	Height="29"
-                        	Margin="5,585,10,0"
+                        	Margin="5,608,10,0"
                         	VerticalAlignment="Top"
                         	Template="{StaticResource pogo}"
                         	Text="0"
@@ -721,23 +721,32 @@
                         <Label x:Name="c_MaxXPPerHourLabel"
                         	Width="210"
                         	Height="26"
-                        	Margin="10,554,0,0"
+                        	Margin="10,577,0,0"
                         	HorizontalAlignment="Left"
                         	VerticalAlignment="Top"
                         	Content="Max XP Per Hour" />
                         <Label x:Name="c_MaxStarDustPerHourLabel_Copy"
                         	Width="210"
                         	Height="26"
-                        	Margin="10,588,0,0"
+                        	Margin="10,611,0,0"
                         	HorizontalAlignment="Left"
                         	VerticalAlignment="Top"
                         	Content="Max Star Dust Per Hour" />
+                        <CheckBox x:Name="c_LootPokestops"
+                        	Width="207"
+                        	Height="16"
+                        	Margin="13,463,0,0"
+                        	HorizontalAlignment="Left"
+                        	VerticalAlignment="Top"
+                        	Checked="BotPropertyChanged"
+                        	Content="Loot PokeStops"
+                        	Unchecked="BotPropertyChanged" />
                     </Grid>
                 </GroupBox>
 
                 <GroupBox x:Name="itemsGroupBox"
                         Height="232"
-                        Margin="0,1518,0,0"
+                        Margin="0,1542,0,0"
                         VerticalAlignment="Top"
                         Header="Items"
                         RenderTransformOrigin="0.479,0.565">
@@ -793,7 +802,7 @@
                                 Height="26"
                                 Margin="10,110,0,0"
                                 VerticalAlignment="Top"
-                                Content="Amount Of BerriesTo Keep" Grid.ColumnSpan="2" />
+                                Content="Amount Of Berries To Keep" Grid.ColumnSpan="2" />
                         <TextBox x:Name="c_TotalAmountOfRazzToKeep"
                                 Grid.Column="2"
                                 Height="29"
@@ -931,7 +940,7 @@
 
                 <GroupBox x:Name="navigationGroupBox3"
                         Grid.Column="1"
-                        Height="539"
+                        Height="527"
                         Margin="5,152,5,0"
                         VerticalAlignment="Top"
                         Header="Navigation">
@@ -1119,53 +1128,43 @@
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Checked="BotPropertyChanged"
-                                Content="Use Mapzen Api Elevation"
+                                Content="Use Mapzen Elevation API"
                                 Unchecked="BotPropertyChanged" Grid.ColumnSpan="2" />
-                        <Label x:Name="c_MapzenApiElevationKeyLabel"
-                                Width="179"
-                                Height="26"
-                                Margin="10,421,0,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                Content="Mapzen Api Elevation Key"
-                                RenderTransformOrigin="0.5,0.423" />
-                        <TextBox x:Name="c_MapzenApiElevationKey"
-                                Grid.Column="1"
-                                Height="29"
-                                Margin="10,421,10,0"
-                                VerticalAlignment="Top"
-                                Template="{StaticResource pogo}"
-                                TextChanged="BotPropertyChanged"
-                                TextWrapping="Wrap" />
                         <Label x:Name="c_RoutingServiceLabel"          
                                 Width="179"
                                 Height="26"
-                                Margin="10,453,0,0"
+                                Margin="10,421,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Content="Routing service"
                                 RenderTransformOrigin="0.5,0.423" />
                         <ComboBox x:Name="c_RoutingService"
                                 Height="24"
-                                Margin="10,455,10,0"  
+                                Margin="10,423,10,0"  
                                 VerticalAlignment="Top" Grid.Column="1"  
                                 SelectionChanged="BotPropertyChanged" />
-                        <Label x:Name="c_GoogleDirectionsApiKeyLabel"
-                                Width="179"
-                                Height="26"
-                                Margin="10,484,0,0"
-                                HorizontalAlignment="Left"
-                                VerticalAlignment="Top"
-                                Content="Google Directions API Key"
-                                RenderTransformOrigin="0.5,0.423" />
-                        <TextBox x:Name="c_GoogleDirectionsApiKey"
-                                Grid.Column="1"
-                                Height="29"
-                                Margin="10,484,10,0"
-                                VerticalAlignment="Top"
-                                Template="{StaticResource pogo}"
-                                TextChanged="BotPropertyChanged"
-                                TextWrapping="Wrap" />
+                        <Label x:Name="CustomRouteLabel"          
+                        	Width="179"
+                        	Height="26"
+                        	Margin="10,473,0,0"
+                        	HorizontalAlignment="Left"
+                        	VerticalAlignment="Top"
+                        	Content="Select Custom Route"
+                        	RenderTransformOrigin="0.5,0.423" />
+                        <ComboBox x:Name="CustomRouteComboBox"
+                        	Height="24"
+                        	Margin="10,473,10,0"  
+                        	VerticalAlignment="Top" Grid.Column="1"  
+                        	SelectionChanged="CustomRouteComboBox_SelectionChanged" />
+                        <CheckBox x:Name="c_UseCustomRoute"
+                        	Width="196"
+                        	Height="16"
+                        	Margin="10,452,0,0"
+                        	HorizontalAlignment="Left"
+                        	VerticalAlignment="Top"
+                        	Checked="BotPropertyChanged"
+                        	Content="Use Custom Route"
+                        	Unchecked="BotPropertyChanged" Grid.ColumnSpan="2" />
 
                     </Grid>
                 </GroupBox>
@@ -1173,7 +1172,7 @@
                 <GroupBox x:Name="deviceInfoGroupBox"
                         Grid.Column="1"
                         Height="509"
-                        Margin="5,696,5,0"
+                        Margin="5,850,5,0"
                         VerticalAlignment="Top"
                         Header="Device Info">
                     <Grid>
@@ -1445,8 +1444,8 @@
                 </GroupBox>
 
                 <GroupBox x:Name="delaysGroupBox"
-                        Height="656"
-                        Margin="5,1210,5,0"
+                        Height="624"
+                        Margin="5,1359,5,0"
                         VerticalAlignment="Top"
                         Header="Delays"
                         RenderTransformOrigin="0.479,0.565" Grid.Column="1">
@@ -1642,12 +1641,12 @@
                                 Template="{StaticResource pogo}"
                                 TextChanged="BotPropertyChanged"
                                 TextWrapping="Wrap" />
-                        <Label x:Name="c_DelayRecyleItemLabel"
+                        <Label x:Name="c_DelayRecycleItemLabel"
                                 Height="26"
                                 Margin="10,484,0,0"
                                 VerticalAlignment="Top"
-                                Content="Delay Recyle Item" />
-                        <TextBox x:Name="c_DelayRecyleItem"
+                                Content="Delay Recycle Item" />
+                        <TextBox x:Name="c_DelayRecycleItem"
                                 Grid.Column="1"
                                 Height="29"
                                 Margin="5,483,10,0"
@@ -1655,22 +1654,9 @@
                                 Template="{StaticResource pogo}"
                                 TextChanged="BotPropertyChanged"
                                 TextWrapping="Wrap" />
-                        <Label x:Name="c_DelaySnipePokemonLabel"
-                                Height="26"
-                                Margin="10,518,0,0"
-                                VerticalAlignment="Top"
-                                Content="Delay Snipe Poke" />
-                        <TextBox x:Name="c_DelaySnipePokemon"
-                                Grid.Column="1"
-                                Height="29"
-                                Margin="5,517,10,0"
-                                VerticalAlignment="Top"
-                                Template="{StaticResource pogo}"
-                                TextChanged="BotPropertyChanged"
-                                TextWrapping="Wrap" />
                         <CheckBox x:Name="c_ReRandomizeDelayOnStart"
                                 Width="180"
-                                Margin="10,549,0,0"
+                                Margin="10,515,0,0"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
                                 Checked="BotPropertyChanged"
@@ -1678,26 +1664,26 @@
                                 Unchecked="BotPropertyChanged" />
                         <Label x:Name="c_MinRandomizeDelayMillisecondsLabel"
                                 Height="26"
-                                Margin="10,570,0,0"
+                                Margin="10,536,0,0"
                                 VerticalAlignment="Top"
                                 Content="Min Randomize Delay (ms)" />
                         <TextBox x:Name="c_MinRandomizeDelayMilliseconds"
                                 Grid.Column="1"
                                 Height="29"
-                                Margin="5,569,10,0"
+                                Margin="5,535,10,0"
                                 VerticalAlignment="Top"
                                 Template="{StaticResource pogo}"
                                 TextChanged="BotPropertyChanged"
                                 TextWrapping="Wrap" />
                         <Label x:Name="c_MaxRandomizeDelayMillisecondsLabel"
                                 Height="26"
-                                Margin="10,604,0,0"
+                                Margin="10,570,0,0"
                                 VerticalAlignment="Top"
                                 Content="Max Randomize Delay (ms)" />
                         <TextBox x:Name="c_MaxRandomizeDelayMilliseconds"
                                 Grid.Column="1"
                                 Height="29"
-                                Margin="5,603,10,0"
+                                Margin="5,569,10,0"
                                 VerticalAlignment="Top"
                                 Template="{StaticResource pogo}"
                                 TextChanged="BotPropertyChanged"
@@ -1710,7 +1696,7 @@
                         Grid.Column="1"
                         Width="110"
                         Height="30"
-                        Margin="0,1871,10,0"
+                        Margin="0,1988,5,0"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         Click="btn_SaveBot_Click"
@@ -1734,6 +1720,83 @@
                         </LinearGradientBrush>
                     </Button.Background>
                 </Button>
+                <GroupBox x:Name="ApiKeysBox"
+                	Height="171"
+                	Margin="5,679,5,0"
+                	VerticalAlignment="Top"
+                	Header="API Keys" Grid.Column="1">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="190" />
+                            <ColumnDefinition />
+                        </Grid.ColumnDefinitions>
+                        <Label x:Name="c_MapzenApiElevationKeyLabel1"
+                			Width="179"
+                			Height="26"
+                			Margin="10,10,0,0"
+                			HorizontalAlignment="Left"
+                			VerticalAlignment="Top"
+                			Content="Mapzen Elevation"
+                			RenderTransformOrigin="0.5,0.423" />
+                        <TextBox x:Name="c_MapzenApiElevationKey"
+                			Grid.Column="1"
+                			Height="29"
+                			Margin="10,10,10,0"
+                			VerticalAlignment="Top"
+                			Template="{StaticResource pogo}"
+                			TextChanged="BotPropertyChanged"
+                			TextWrapping="Wrap" />
+                        <Label x:Name="c_GoogleDirectionsApiKeyLabel1"
+                			Width="179"
+                			Height="26"
+                			Margin="10,44,0,0"
+                			HorizontalAlignment="Left"
+                			VerticalAlignment="Top"
+                			Content="Google Directions"
+                			RenderTransformOrigin="0.5,0.423" />
+                        <TextBox x:Name="c_GoogleDirectionsApiKey"
+                			Grid.Column="1"
+                			Height="29"
+                			Margin="10,44,10,0"
+                			VerticalAlignment="Top"
+                			Template="{StaticResource pogo}"
+                			TextChanged="BotPropertyChanged"
+                			TextWrapping="Wrap" />
+                        <Label x:Name="c_MapzenValhallaApiKeyLabel"
+                        	Width="179"
+                        	Height="26"
+                        	Margin="10,78,0,0"
+                        	HorizontalAlignment="Left"
+                        	VerticalAlignment="Top"
+                        	Content="Mapzen Valhalla Routing"
+                        	RenderTransformOrigin="0.5,0.423" />
+                        <TextBox x:Name="c_MapzenValhallaApiKey"
+                        	Grid.Column="1"
+                        	Height="29"
+                        	Margin="10,78,10,0"
+                        	VerticalAlignment="Top"
+                        	Template="{StaticResource pogo}"
+                        	TextChanged="BotPropertyChanged"
+                        	TextWrapping="Wrap" />
+                        <Label x:Name="c_MobBotRoutingApiKeyLabel"
+                        	Width="179"
+                        	Height="26"
+                        	Margin="10,112,0,0"
+                        	HorizontalAlignment="Left"
+                        	VerticalAlignment="Top"
+                        	Content="MobBot Route"
+                        	RenderTransformOrigin="0.5,0.423" />
+                        <TextBox x:Name="c_MobBotRoutingApiKey"
+                        	Grid.Column="1"
+                        	Height="29"
+                        	Margin="10,112,10,0"
+                        	VerticalAlignment="Top"
+                        	Template="{StaticResource pogo}"
+                        	TextChanged="BotPropertyChanged"
+                        	TextWrapping="Wrap" />
+
+                    </Grid>
+                </GroupBox>
             </Grid>
         </ScrollViewer>
     </Grid>

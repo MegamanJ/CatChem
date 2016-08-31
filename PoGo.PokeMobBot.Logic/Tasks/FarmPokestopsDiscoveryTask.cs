@@ -116,13 +116,13 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                     continue;
                 }
 
-                if (session.LogicSettings.RoutingService == RoutingService.GoogleDirections)
+                if (session.LogicSettings.RoutingService == RoutingService.GoogleDirections || session.LogicSettings.RoutingService == RoutingService.MapzenValhalla )
                 {
-#if DEBUG
-                    bestRoute = RoutingUtils.GetBestRoute(pokeStop, pokestopList.Where(x => !session.MapCache.CheckPokestopUsed(x)), 10);
-#else
+//#if DEBUG
+//                    bestRoute = RoutingUtils.GetBestRoute(pokeStop, pokestopList.Where(x => !session.MapCache.CheckPokestopUsed(x)), 10);
+//#else
                     bestRoute = RoutingUtils.GetBestRoute(pokeStop, pokestopList.Where(x => !session.MapCache.CheckPokestopUsed(x)), 20);
-#endif
+//#endif
                     session.EventDispatcher.Send(new PokestopsOptimalPathEvent()
                     {
                         Coords = bestRoute.Select(x => Tuple.Create(x.Latitude, x.Longitude)).ToList()
@@ -145,9 +145,15 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                     await session.Client.Player.UpdatePlayerLocation(fortInfo.Latitude, fortInfo.Longitude,
                         session.Client.Settings.DefaultAltitude);
                 else
-                    await MoveToPokestop(session, cancellationToken, pokeStop, bestRoute);
+                    await MoveToPokestop(session, cancellationToken, pokeStop, bestRoute, eggWalker);
 
                 bestRoute.Clear();
+
+                if (!session.LogicSettings.LootPokestops)
+                {
+                    session.MapCache.UsedPokestop(pokeStop, session);
+                    continue;
+                }
 
                 if (!session.ForceMoveJustDone)
                 {
@@ -164,7 +170,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                         if (fortSearch.ExperienceAwarded > 0 && timesZeroXPawarded > 0) timesZeroXPawarded = 0;
                         if (fortSearch.ExperienceAwarded == 0)
                         {
-                            if (TimesZeroXPawarded == 0) await MoveToPokestop(session, cancellationToken, pokeStop, null);
+                            if (TimesZeroXPawarded == 0) await MoveToPokestop(session, cancellationToken, pokeStop, null, eggWalker);
                             timesZeroXPawarded++;
                             if ((int) fortSearch.CooldownCompleteTimestampMs != 0)
                             {
@@ -172,20 +178,6 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                                 // Check if successfully looted, if so program can continue as this was "false alarm".
                             }
                             if (timesZeroXPawarded <= zeroCheck) continue;
-
-                            //fortTry += 1;
-
-                            //if (!shownSoftBanMessage || fortTry % 5 == 0)
-                            //{
-                            //    session.EventDispatcher.Send(new FortFailedEvent
-                            //    {
-                            //        Name = fortInfo.Name,
-                            //        Try = fortTry,
-                            //        Max = retryNumber - zeroCheck
-                            //    });
-                            //    shownSoftBanMessage = true;
-                            //}
-                            //await DelayingUtils.Delay(session.LogicSettings.DelaySoftbanRetry, 400);
 
                             session.MapCache.UsedPokestop(pokeStop, session); //fuck that pokestop - skip it
 
@@ -247,7 +239,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
             }
         }
 
-        private static async Task MoveToPokestop(ISession session, CancellationToken cancellationToken, FortCacheItem pokeStop, List<GeoCoordinate> waypoints )
+        private static async Task MoveToPokestop(ISession session, CancellationToken cancellationToken, FortCacheItem pokeStop, List<GeoCoordinate> waypoints, EggWalker eggWalker )
         {
             await session.Navigation.Move(new GeoCoordinate(pokeStop.Latitude, pokeStop.Longitude),
                 session.LogicSettings.WalkingSpeedMin, session.LogicSettings.WalkingSpeedMax,
@@ -267,7 +259,7 @@ namespace PoGo.PokeMobBot.Logic.Tasks
                     await UseNearbyPokestopsTask.Execute(session, cancellationToken);
                     return true;
 
-                }, cancellationToken, session, waypointsToVisit: waypoints);
+                }, cancellationToken, session, waypointsToVisit: waypoints, eggWalker: eggWalker);
         }
 
         private static async Task<List<FortCacheItem>> GetPokeStops(ISession session)

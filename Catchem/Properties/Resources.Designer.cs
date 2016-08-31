@@ -3083,6 +3083,16 @@ namespace Catchem.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap atk {
+            get {
+                object obj = ResourceManager.GetObject("atk", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap bag_upgrade {
             get {
                 object obj = ResourceManager.GetObject("bag_upgrade", resourceCulture);
@@ -3163,6 +3173,36 @@ namespace Catchem.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap candy {
+            get {
+                object obj = ResourceManager.GetObject("candy", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Dark_inv {
+            get {
+                object obj = ResourceManager.GetObject("Dark_inv", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap def {
+            get {
+                object obj = ResourceManager.GetObject("def", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Dragon_inv {
             get {
                 object obj = ResourceManager.GetObject("Dragon_inv", resourceCulture);
@@ -3186,6 +3226,16 @@ namespace Catchem.Properties {
         internal static System.Drawing.Bitmap egg {
             get {
                 object obj = ResourceManager.GetObject("egg", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap Electric_inv {
+            get {
+                object obj = ResourceManager.GetObject("Electric_inv", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -3296,6 +3346,16 @@ namespace Catchem.Properties {
         internal static System.Drawing.Bitmap gym {
             get {
                 object obj = ResourceManager.GetObject("gym", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap hp {
+            get {
+                object obj = ResourceManager.GetObject("hp", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
@@ -3553,6 +3613,16 @@ namespace Catchem.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap sta {
+            get {
+                object obj = ResourceManager.GetObject("sta", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap Steel_inv {
             get {
                 object obj = ResourceManager.GetObject("Steel_inv", resourceCulture);
@@ -3676,6 +3746,16 @@ namespace Catchem.Properties {
         internal static System.Drawing.Bitmap Water_inv {
             get {
                 object obj = ResourceManager.GetObject("Water_inv", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
+        internal static System.Drawing.Bitmap wp {
+            get {
+                object obj = ResourceManager.GetObject("wp", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
             }
         }
